@@ -116,28 +116,13 @@ nvim /boot/refind_linux.conf
     # resume=/dev/mapper/cryptswap
 exit
 ---
-pacman.conf
-angband
-backlight
-pulsemixer
-sway waybar swaylock bemenu alacritty
-firefox-developer-edition
-.dotfiles
-go
-yay
+trusted
 cargo-update
 starship
-otf-nerd-fonts-fira-code
-artix-backgrounds
-noto-fonts-emoji
+.dotfiles
 spacevim
-tokei
-tmux
-xorg
-lutris
-protonvpn-cli-ng
 '''
 
-import os
+from subprocess import run
 
 print("Installing Artix Linux with LUKS and Btrfs...")
