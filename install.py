@@ -52,14 +52,14 @@ while True:
 
     if cryptpass == second and len(cryptpass) > 1:
         break
-run(f"printf '{cryptpass}' > cryptpass.txt", shell=True)
+run(f"printf '{cryptpass}' > /cryptpass.txt", shell=True)
 run("cryptsetup close /dev/mapper/cryptroot", shell=True),
 run("cryptsetup close /dev/mapper/cryptswap", shell=True),
    
-run(f"yes YES | cryptsetup luksFormat {disk}3 cryptpass.txt", shell=True)
-run(f"yes YES | cryptsetup luksFormat {disk}2 cryptpass.txt", shell=True)
+run(f"yes YES | cryptsetup luksFormat {disk}3 /cryptpass.txt", shell=True)
+run(f"yes YES | cryptsetup luksFormat {disk}2 /cryptpass.txt", shell=True)
 
-run("rm cryptpass.txt", shell=True)
+run("rm /cryptpass.txt", shell=True)
 
 run(f"yes '{cryptpass}' | cryptsetup open {disk}3 cryptroot", shell=True)
 run(f"yes '{cryptpass}' | cryptsetup open {disk}2 cryptswap", shell=True)
