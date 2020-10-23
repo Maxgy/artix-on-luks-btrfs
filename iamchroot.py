@@ -33,7 +33,7 @@ run("nvim /etc/pacman.conf", shell=True)
 run("printf '\nkeyserver hkp://keyserver.ubuntu.com\n' >> /etc/pacman.d/gnupg/gpg.conf", shell=True)
 run("pacman-key --populate artix", shell=True)
 
-run("yes | pacman -Syu bat fd exa ripgrep neofetch", shell=True)
+run("yes | pacman -Syu neofetch", shell=True)
 
 # Localization
 print("Uncomment locales.")
@@ -77,7 +77,7 @@ run(f"printf 'rfkill unblock wifi\nneofetch >| /etc/issue\n' > /etc/local.d/loca
 run("chmod +x /etc/local.d/local.start", shell=True)
 
 # Add default user
-run("yes | pacman -S zsh openrc-zsh-completions zsh-autosuggestions zsh-completions zsh-syntax-highlighting", shell=True)
+run("yes | pacman -S zsh", shell=True)
 run("chsh -s /bin/zsh", shell=True)
 
 print("\nChanging root password...")
