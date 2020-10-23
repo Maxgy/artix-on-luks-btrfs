@@ -126,7 +126,7 @@ spacevim
 
 import sys
 
-from subprocess import run, check_output, Popen, PIPE, STDOUT
+from subprocess import run, check_output
 
 print("Installing Artix Linux with LUKS and Btrfs...\n")
 
@@ -163,7 +163,7 @@ while True:
     
     print(f"\nInstall on '{disk}'?", end=" (y/N): ")
     choice = input().strip()
-    if choice[0] == "y":
+    if len(choice) > 0 and choice[0] == "y":
         break
 
 # Setup encrypted partitions
@@ -176,23 +176,17 @@ while True:
 
     if cryptpass == second and len(cryptpass) > 1:
         break
-run("printf '" + cryptpass + "' > cryptpass.txt", shell=True)
+run(f"printf '{cryptpass}' > cryptpass.txt", shell=True)
 run("cryptsetup close /dev/mapper/cryptroot", shell=True),
 run("cryptsetup close /dev/mapper/cryptswap", shell=True),
    
-p_list = [Popen(f"cryptsetup luksFormat {disk}3 cryptpass.txt", shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE),
-          Popen(f"cryptsetup luksFormat {disk}2 cryptpass.txt", shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)]
-
-for p in p_list:
-    output_data = p.communicate(input="YES")[0]
+run(f"yes YES | cryptsetup luksFormat {disk}3 cryptpass.txt", shell=True)
+run(f"yes YES | cryptsetup luksFormat {disk}2 cryptpass.txt", shell=True)
 
 run("rm cryptpass.txt", shell=True)
 
-p_list = [Popen(f"cryptsetup open {disk}3 cryptroot", shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE),
-          Popen(f"cryptsetup open {disk}2 cryptswap", shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)]
-
-for p in p_list:
-    output_data = p.communicate(input=cryptpass)[0]
+run(f"yes '{cryptpass}' | cryptsetup open {disk}3 cryptroot", shell=True)
+run(f"yes '{cryptpass}' | cryptsetup open {disk}2 cryptswap", shell=True)
 
 # Format partitions
 run("mkswap /dev/mapper/cryptswap", shell=True)
@@ -200,6 +194,10 @@ run(f"mkfs.fat -F 32 {disk}1", shell=True)
 run("mkfs.btrfs /dev/mapper/cryptroot", shell=True)
 
 # Create subvolumes
+run("umount -R /mnt/boot", shell=True)
+run("umount -R /mnt", shell=True)
+run("rm -rf /mnt", shell=True)
+run("mkdir /mnt", shell=True)
 run("mount /dev/mapper/cryptroot /mnt", shell=True)
 run("btrfs subvolume create /mnt/@", shell=True)
 run("btrfs subvolume create /mnt/@snapshots", shell=True)
@@ -220,9 +218,8 @@ run("basestrap /mnt base base-devel openrc cryptsetup btrfs-progs python neovim"
 run("basestrap /mnt linux linux-firmware linux-headers", shell=True)
 run("fstabgen -U /mnt >> /mnt/etc/fstab", shell=True)
 
-# Chroot into new system
+# Finish
 run("cp install.py /mnt/root/", shell=True)
 run("cp iamchroot.py /mnt/root/", shell=True)
-print("\nRun iamchroot.py once you are in the new system.")
-input()
-run("artools-chroot /mnt /bin/bash", shell=True)
+print("Run `artools-chroot /mnt /bin/bash`")
+print("\nRun `python /root/iamchroot.py` once you are in the new system.")

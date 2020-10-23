@@ -2,7 +2,13 @@
 
 import sys
 
+from signal import signal, SIGINT
 from subprocess import run, check_output
+
+def handler(recv, frame):
+    sys.exit()
+
+signal(SIGINT, handler)
 
 # Input vars
 print("Region", end=": ")
@@ -18,9 +24,9 @@ while True:
     if len(disk) > 0:
         break
 
+'''
 # Boring stuff you should probably do
 run(f"ln -sf /usr/share/zoneinfo/{region}/{city} /etc/localtime", shell=True)
-run("hwclock --systohc", shell=True)
 run("hwclock --systohc", shell=True)
 
 # Configure pacman
@@ -61,7 +67,7 @@ run(f"printf '\n127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{hostname}.lo
 # Install boot loader
 run("yes | pacman -S efibootmgr refind amd-ucode intel-ucode", shell=True)
 
-disk3uuid = check_output("sudo blkid /dev/mapper/cryptroot -o value -s UUID", shell=True).strip()
+disk3uuid = str(check_output(f"sudo blkid {disk}3 -o value -s UUID", shell=True).strip())[1:]
 run(f"printf '\"Boot with standard options\"  \"cryptdevice=UUID={disk3uuid}:cryptroot root=/dev/mapper/cryptroot resume=/dev/mapper/cryptswap rootflags=subvol=@ rw initrd=amd-ucode.img initrd=intel-ucode.img initrd=initramfs-linux.img\"\n' > /boot/refind_linux.conf", shell=True)
 
 run("refind-install", shell=True)
@@ -74,10 +80,22 @@ run("chmod +x /etc/local.d/local.start", shell=True)
 # Add default user
 run("yes | pacman -S zsh openrc-zsh-completions zsh-autosuggestions zsh-completions zsh-syntax-highlighting", shell=True)
 run("chsh -s /bin/zsh", shell=True)
+
 print("\nChanging root password...")
-run("passwd", shell=True)
+password = ""
+while True:
+    print("Password", end=": ")
+    password = input().strip()
+    print("Repeat password", end=": ")
+    second = input().strip()
+    
+    if password == second and len(password) > 1:
+        break
+run(f"yes '{password}' | passwd", shell=True)
+
 run("rm /etc/skel/.bash*", shell=True)
 run("useradd -D -s /bin/zsh", shell=True)
+
 username = ""
 while True:
     print("Username", end=": ")
@@ -85,7 +103,17 @@ while True:
     if len(username) > 1:
         break
 run(f"useradd -m {username}", shell=True)
-run(f"passwd {username}", shell=True)
+
+password = ""
+while True:
+    print("Password", end=": ")
+    password = input().strip()
+    print("Repeat password", end=": ")
+    second = input().strip()
+    
+    if password == second and len(password) > 1:
+        break
+run(f"yes '{password}' | passwd {username}", shell=True)
 run(f"usermod -a -G wheel {username}", shell=True)
 run(f"usermod -a -G video {username}", shell=True)
 run(f"usermod -a -G games {username}", shell=True)
@@ -100,15 +128,16 @@ print("MOTD", end=": ")
 motd = input().strip()
 run(f"printf '\n{motd}\n' > /etc/motd", shell=True)
 
-run("printf '/dev/mapper/cryptswap\tswap\tswap\tdefaults\t0 0' >> /etc/fstab", shell=True)
+run("printf '/dev/mapper/cryptswap\t\tswap\t\tswap\t\tdefaults\t0 0' >> /etc/fstab", shell=True)
 print("Remove duplicate 'subvol's from fstab.")
 print("And use '/dev/mapper/cryptroot instead of UUID.'")
 input()
 run("nvim /etc/fstab", shell=True)
+'''
 
 # Finally fix swap
-swapuuid = check_output("sudo blkid /dev/mapper/cryptswap -o value -s UUID", shell=True).strip()
-run("printf 'run_hook() {\n\tcryptsetup open /dev/disk/by-uuid/" + swapuuid + " cryptswap\n}\n' > /etc/initcpio/hooks/openswap", shell=True)
+swapuuid = str(check_output(f"sudo blkid {disk}2 -o value -s UUID", shell=True).strip())[1:]
+run("printf 'run_hook() {\n\tcryptsetup open /dev/disk/by-uuid/" + str(swapuuid) + " cryptswap\n}\n' > /etc/initcpio/hooks/openswap", shell=True)
 run("printf 'build() {\n\tadd_runscript\n}\n' > /etc/initcpio/install/openswap", shell=True)
 print("Add '/usr/bin/btrfs' to BINARIES")
 print("Use these hooks:")
