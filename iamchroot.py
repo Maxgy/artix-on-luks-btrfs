@@ -24,7 +24,6 @@ while True:
     if len(disk) > 0:
         break
 
-'''
 # Boring stuff you should probably do
 run(f"ln -sf /usr/share/zoneinfo/{region}/{city} /etc/localtime", shell=True)
 run("hwclock --systohc", shell=True)
@@ -133,7 +132,6 @@ print("Remove duplicate 'subvol's from fstab.")
 print("And use '/dev/mapper/cryptroot instead of UUID.'")
 input()
 run("nvim /etc/fstab", shell=True)
-'''
 
 # Finally fix swap
 swapuuid = str(check_output(f"sudo blkid {disk}2 -o value -s UUID", shell=True).strip())[1:]
