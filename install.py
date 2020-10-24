@@ -95,6 +95,7 @@ run("basestrap /mnt linux linux-firmware linux-headers", shell=True)
 run("fstabgen -U /mnt >> /mnt/etc/fstab", shell=True)
 
 # Finish
+run("cp preinstall.sh /mnt/root/", shell=True)
 run("cp install.py /mnt/root/", shell=True)
 run("cp iamchroot.py /mnt/root/", shell=True)
 print("Run `artools-chroot /mnt /bin/bash`")
