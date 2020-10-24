@@ -125,7 +125,7 @@ run("yes | pacman -S dhcpcd wpa_supplicant connman-openrc", shell=True)
 run("rc-update add connmand", shell=True)
 print("MOTD", end=": ")
 motd = input().strip()
-run(f"printf '\n{motd}\n' > /etc/motd", shell=True)
+run(f"printf '\n{motd}\n\n' > /etc/motd", shell=True)
 
 run("printf '/dev/mapper/cryptswap\t\tswap\t\tswap\t\tdefaults\t0 0' >> /etc/fstab", shell=True)
 print("Remove duplicate 'subvol's from fstab.")
