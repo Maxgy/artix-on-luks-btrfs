@@ -128,10 +128,6 @@ motd = input().strip()
 run(f"printf '\n{motd}\n\n' > /etc/motd", shell=True)
 
 run("printf '/dev/mapper/cryptswap\t\tswap\t\tswap\t\tdefaults\t0 0' >> /etc/fstab", shell=True)
-print("Remove duplicate 'subvol's from fstab.")
-print("And use '/dev/mapper/cryptroot instead of UUID.' [ENTER]", end="")
-input()
-run("nvim /etc/fstab", shell=True)
 
 # Finally fix swap
 swapuuid = str(check_output(f"sudo blkid {disk}2 -o value -s UUID", shell=True).strip())[1:]
