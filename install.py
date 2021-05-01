@@ -27,16 +27,23 @@ while True:
         disk = input().strip()
         if len(disk) > 0:
             break
-    print('''Partition scheme:
+    print("\n Swap amount (in GiB):")
+    swap = input().strip()
+    print(f'''Partition scheme:
         gpt
         1 New 1G 'EFI System'
-        2 New 16G 'Linux swap'
+        2 New {swap}G 'Linux swap'
         3 New *FREE 'Linux filesystem'
         Write yes Quit
     ''')
     input()
-    run(f"cfdisk {disk}", shell=True)
-    
+    run(f'''parted {disk} -s \\
+        mklabel gpt \\
+        mkpart ESP fat32 1MiB 1GiB \\
+        mkpart primary 1GiB {swap+1}GiB \\
+        mkpart primary {swap+1}GiB 100%
+    ''', shell=True)
+
     print(f"\nInstall on '{disk}'?", end=" (y/N): ")
     choice = input().strip()
     if len(choice) > 0 and choice[0] == "y":
@@ -55,7 +62,7 @@ while True:
 run(f"printf '{cryptpass}' > /cryptpass.txt", shell=True)
 run("cryptsetup close /dev/mapper/cryptroot", shell=True),
 run("cryptsetup close /dev/mapper/cryptswap", shell=True),
-   
+
 run(f"yes YES | cryptsetup luksFormat {disk}3 /cryptpass.txt", shell=True)
 run(f"yes YES | cryptsetup luksFormat {disk}2 /cryptpass.txt", shell=True)
 
