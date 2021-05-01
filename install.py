@@ -117,5 +117,6 @@ run("fstabgen -U /mnt >> /mnt/etc/fstab", shell=True)
 run("cp preinstall.sh /mnt/root/", shell=True)
 run("cp install.py /mnt/root/", shell=True)
 run("cp iamchroot.py /mnt/root/", shell=True)
-print("\nRun `artix-chroot /mnt /bin/bash`")
-print("\nRun `python /root/iamchroot.py` once you are in the new system.")
+run("artix-chroot /mnt /bin/python /root/iamchroot.py", shell=True)
+
+print("You can now remove the live disk and reboot.")

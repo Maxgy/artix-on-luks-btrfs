@@ -165,5 +165,3 @@ print("[ENTER]", end=" ")
 input()
 run("nvim /etc/mkinitcpio.conf", shell=True)
 run("mkinitcpio -P", shell=True)
-
-print("\nTasks completed. You should exit and reboot.")
