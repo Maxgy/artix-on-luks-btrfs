@@ -21,7 +21,7 @@ if "nvme" in disk:
     part1 = disk + "p1"
     part2 = disk + "p2"
     part3 = disk + "p3"
-if "nvme" in disk:
+else:
     part1 = disk + "1"
     part2 = disk + "2"
     part3 = disk + "3"
