@@ -28,7 +28,7 @@ while True:
         if len(disk) > 0:
             break
     print("\n Swap amount (in GiB):")
-    swap = input().strip()
+    swap = int(input().strip())
     print(f'''Partition scheme:
         gpt
         1 New 1G 'EFI System'
