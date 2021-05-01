@@ -63,17 +63,29 @@ run(f"printf '{cryptpass}' > /cryptpass.txt", shell=True)
 run("cryptsetup close /dev/mapper/cryptroot", shell=True),
 run("cryptsetup close /dev/mapper/cryptswap", shell=True),
 
-run(f"yes YES | cryptsetup luksFormat {disk}3 /cryptpass.txt", shell=True)
-run(f"yes YES | cryptsetup luksFormat {disk}2 /cryptpass.txt", shell=True)
+part1 = ""
+part2 = ""
+part3 = ""
+if "nvme" in disk:
+    part1 = disk + "p1"
+    part2 = disk + "p2"
+    part3 = disk + "p3"
+if "nvme" in disk:
+    part1 = disk + "1"
+    part2 = disk + "2"
+    part3 = disk + "3"
+
+run(f"yes YES | cryptsetup luksFormat {part3} /cryptpass.txt", shell=True)
+run(f"yes YES | cryptsetup luksFormat {part2} /cryptpass.txt", shell=True)
 
 run("rm /cryptpass.txt", shell=True)
 
-run(f"yes '{cryptpass}' | cryptsetup open {disk}3 cryptroot", shell=True)
-run(f"yes '{cryptpass}' | cryptsetup open {disk}2 cryptswap", shell=True)
+run(f"yes '{cryptpass}' | cryptsetup open {part3} cryptroot", shell=True)
+run(f"yes '{cryptpass}' | cryptsetup open {part2} cryptswap", shell=True)
 
 # Format partitions
 run("mkswap /dev/mapper/cryptswap", shell=True)
-run(f"mkfs.fat -F 32 {disk}1", shell=True)
+run(f"mkfs.fat -F 32 {part1}", shell=True)
 run("mkfs.btrfs /dev/mapper/cryptroot", shell=True)
 
 # Create subvolumes
@@ -94,7 +106,7 @@ run("mkdir /mnt/home", shell=True)
 run("mount -o compress=zstd,subvol=@snapshots /dev/mapper/cryptroot /mnt/.snapshots", shell=True)
 run("mount -o compress=zstd,subvol=@home /dev/mapper/cryptroot /mnt/home", shell=True)
 run("mkdir /mnt/boot", shell=True)
-run(f"mount {disk}1 /mnt/boot", shell=True)
+run(f"mount {part1} /mnt/boot", shell=True)
 
 # Install base system and kernel
 run("basestrap /mnt base base-devel openrc cryptsetup btrfs-progs python neovim", shell=True)
