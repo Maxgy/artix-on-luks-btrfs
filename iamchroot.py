@@ -5,8 +5,10 @@ import sys
 from signal import signal, SIGINT
 from subprocess import run, check_output
 
+
 def handler(recv, frame):
     sys.exit()
+
 
 signal(SIGINT, handler)
 
@@ -24,6 +26,17 @@ while True:
     if len(disk) > 0:
         break
 
+part1 = ""
+part2 = ""
+part3 = ""
+if "nvme" in disk:
+    part1 = disk + "p1"
+    part2 = disk + "p2"
+    part3 = disk + "p3"
+else:
+    part1 = disk + "1"
+    part2 = disk + "2"
+    part3 = disk + "3"
 # Boring stuff you should probably do
 run(f"ln -sf /usr/share/zoneinfo/{region}/{city} /etc/localtime", shell=True)
 run("hwclock --systohc", shell=True)
@@ -61,16 +74,18 @@ while True:
     if len(hostname) > 1:
         break
 run(f"printf '{hostname}\n' > /etc/hostname", shell=True)
-run(f"printf '\n127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{hostname}.localdomain\t{hostname}\n' > /etc/hosts", shell=True)
+run(
+    f"printf '\n127.0.0.1\tlocalhost\n::1\t\tlocalhost\n127.0.1.1\t{hostname}.localdomain\t{hostname}\n' > /etc/hosts", shell=True)
 
 # Install boot loader
 run("yes | pacman -S efibootmgr refind amd-ucode intel-ucode", shell=True)
 
-disk3uuid = str(check_output(f"sudo blkid {disk}3 -o value -s UUID", shell=True).strip())[1:]
+disk3uuid = str(check_output(
+    f"sudo blkid {part3} -o value -s UUID", shell=True).strip())[1:]
 run(f"printf '\"Boot with standard options\"  \"cryptdevice=UUID={disk3uuid}:cryptroot root=/dev/mapper/cryptroot resume=/dev/mapper/cryptswap rootflags=subvol=@ rw initrd=amd-ucode.img initrd=intel-ucode.img initrd=initramfs-linux.img\"\n' > /boot/refind_linux.conf", shell=True)
 
 run("refind-install", shell=True)
-run(f"refind-install --usedefault {disk}1", shell=True)
+run(f"refind-install --usedefault {part1}", shell=True)
 
 # Local.start
 run(f"printf 'rfkill unblock wifi\nneofetch >| /etc/issue\n' > /etc/local.d/local.start", shell=True)
@@ -87,7 +102,7 @@ while True:
     password = input().strip()
     print("Repeat password", end=": ")
     second = input().strip()
-    
+
     if password == second and len(password) > 1:
         break
 run(f"yes '{password}' | passwd", shell=True)
@@ -109,7 +124,7 @@ while True:
     password = input().strip()
     print("Repeat password", end=": ")
     second = input().strip()
-    
+
     if password == second and len(password) > 1:
         break
 run(f"yes '{password}' | passwd {username}", shell=True)
@@ -133,8 +148,10 @@ run(f"printf '\n{motd}\n\n' > /etc/motd", shell=True)
 run("printf '/dev/mapper/cryptswap\t\tswap\t\tswap\t\tdefaults\t0 0' >> /etc/fstab", shell=True)
 
 # Finally fix swap
-swapuuid = str(check_output(f"sudo blkid {disk}2 -o value -s UUID", shell=True).strip())[1:]
-run("printf 'run_hook() {\n\tcryptsetup open /dev/disk/by-uuid/" + str(swapuuid) + " cryptswap\n}\n' > /etc/initcpio/hooks/openswap", shell=True)
+swapuuid = str(check_output(
+    f"sudo blkid {part2} -o value -s UUID", shell=True).strip())[1:]
+run("printf 'run_hook() {\n\tcryptsetup open /dev/disk/by-uuid/" + str(
+    swapuuid) + " cryptswap\n}\n' > /etc/initcpio/hooks/openswap", shell=True)
 run("printf 'build() {\n\tadd_runscript\n}\n' > /etc/initcpio/install/openswap", shell=True)
 print("Add '/usr/bin/btrfs' to BINARIES")
 print("Use these hooks and binaries:")
@@ -148,5 +165,3 @@ print("[ENTER]", end=" ")
 input()
 run("nvim /etc/mkinitcpio.conf", shell=True)
 run("mkinitcpio -P", shell=True)
-
-print("\nTasks completed. You should exit and reboot.")
