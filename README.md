@@ -1,6 +1,6 @@
 # artix-on-luks-btrfs
 
-A stupid installer for Artix Linux
+Archived in favor of https://github.com/Zaechus/artix-installer
 
 ## Usage
 
